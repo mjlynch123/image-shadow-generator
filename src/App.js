@@ -9,6 +9,7 @@ function App() {
   const [showUpload, setShowUpload] = useState(true); // Showing the upload form
   const canvasRef = useRef(null);
 
+  // Handling the image upload
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -20,6 +21,7 @@ function App() {
     }
   };
 
+  // Analyzing the image to get the most popular colors on everytime the image is uploaded
   useEffect(() => {
     if (image) {
       analyzeImage();
@@ -55,6 +57,7 @@ function App() {
     return (Math.abs(r - g) < 15 && Math.abs(g - b) < 15) && (avg < 60 || avg > 190);
   };
 
+  // Going grid space to grid space calculating the average color
   const analyzeImage = () => {
     if (!image) return;
     const canvas = canvasRef.current;
