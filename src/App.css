@@ -1,6 +1,7 @@
 * {
   box-sizing: border-box;
-  background-color: #1a1a1a
+  background-color: #0d0d0d;
+
 }
 
 .upload-form {
@@ -10,6 +11,11 @@
   width: 100%;
 }
 
+.image-container {
+  background-color: transparent;
+}
+
 .image-container img {
   box-shadow: 0px 0px 70px 5px rgba(0, 0, 0, .8);
+  border-radius: 15px;
 }
