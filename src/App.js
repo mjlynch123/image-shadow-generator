@@ -100,7 +100,7 @@ function App() {
       const neutralCount = sortedColors.filter(isNeutralColor).length;
 
       // If most colors are neutral, apply a fallback gradient
-      if (neutralCount >= 3) {
+      if (neutralCount >= 2) {
         setPopularColors([
           "rgba(204, 204, 204, 0.6)",  // Light Grey (Middle Color)
           "rgba(77, 77, 77, 0.6)",  // Dark Grey (Outer Middle Color)
