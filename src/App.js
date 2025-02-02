@@ -31,6 +31,8 @@ function App() {
       b += data[i + 2];
       count++;
     }
+
+    return `rgb(${Math.round(r / count)}, ${Math.round(g / count)}, ${Math.round(b / count)})`;
   }
 
   return (
