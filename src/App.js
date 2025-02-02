@@ -97,11 +97,11 @@ function App() {
       const neutralCount = sortedColors.filter(isNeutralColor).length;
 
       // If most colors are neutral, apply a fallback gradient
-      if (neutralCount >= 2) {
+      if (neutralCount >= 3) {
         setPopularColors([
-          "rgba(255, 87, 51, 0.6)",  // Vibrant orange-red
-          "rgba(255, 195, 0, 0.6)",  // Bright yellow
-          "rgba(54, 79, 107, 0.6)"   // Deep blue
+          "rgba(204, 204, 204, 0.6)",  // Light Grey (Middle Color)
+          "rgba(77, 77, 77, 0.6)",  // Dark Grey (Outer Middle Color)
+          "rgba(13, 13, 13, 0.6)"   // Deep blue (End Color)
         ]);
       } else {
         setPopularColors(sortedColors);
@@ -113,7 +113,7 @@ function App() {
     <div style={{
       background: popularColors.length ?
         `radial-gradient(circle, ${popularColors[0]} 0%, ${popularColors[1]} 50%, ${popularColors[2]} 100%)`
-        : "radial-gradient(circle, rgba(255, 87, 51, 0.6) 0%, rgba(255, 195, 0, 0.6) 50%, rgba(54, 79, 107, 0.6) 100%)",
+        : "radial-gradient(circle, rgba(204, 204, 204, 0.6) 0%, rgba(77, 77, 77, 0.6) 50%, rgba(13, 13, 13, 0.6) 100%)",
       minHeight: "100vh",
       display: "flex",
       flexDirection: "column",
