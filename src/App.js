@@ -19,6 +19,20 @@ function App() {
     }
   }
 
+  const getAverageColor = (ctx, x, y, width, height) => {
+    const imageData = ctx.getImageData(x, y, width, height);
+    const data = imageData.data;
+
+    let r = 0, g = 0, b = 0, count = 0;
+
+    for (let i = 0; i < data.leng; i += 4) {
+      r += data[i];
+      g += data[i + 1];
+      b += data[i + 2];
+      count++;
+    }
+  }
+
   return (
     <div className="App">
 
