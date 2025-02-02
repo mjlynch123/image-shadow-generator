@@ -35,6 +35,48 @@ function App() {
     return `rgb(${Math.round(r / count)}, ${Math.round(g / count)}, ${Math.round(b / count)})`;
   }
 
+  const analyzeImage = () => {
+    if (!image) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.src = image;
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+
+      const cols = Math.floor(img.width / gridSize);
+      const rows = Math.floor(img.height / gridSize);
+      let colorArray = [];
+
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          const color = getAverageColor(
+            ctx,
+            x * gridSize,
+            y * gridSize,
+            gridSize,
+            gridSize
+          );
+          colorArray.push(color);
+        }
+      }
+
+      const colorCount = {};
+      colorArray.forEach(color => {
+        colorCount[color] = (colorCount[color] || 0) + 1;
+      });
+
+      const sortedColors = Object.entries(colorCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(color => color[0]);
+
+      setPopularColors(sortedColors);
+    }
+  }
+
   return (
     <div className="App">
 
