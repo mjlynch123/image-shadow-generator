@@ -85,7 +85,16 @@ function App() {
   }
 
   return (
-    <div className="App">
+    <div style={{
+      background: popularColors.length ? `radial-gradient(circle, ${popularColors[0]} 0%, ${popularColors[1]} 50%, ${popularColors[2]} 100%)` : "#ffffff",
+      minHeight: "100vh",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "20px"
+    }}
+      className='App'>
       <div className='upload-form'>
         <input type='file' accept='image/*' onChange={handleImageUpload} />
         {/* <button onClick={analyzeImage} disabled={!image}>Analyze Image</button> */}
@@ -105,7 +114,7 @@ function App() {
               alt="Uploaded"
               style={{
                 maxWidth: "100%",
-                boxShadow: popularColors.length ? `0 0 20px 0px ${popularColors[0]}, 0 0 40px 10px ${popularColors[1]}, 0 0 80px 20px ${popularColors[2]}` : "none"
+                // boxShadow: popularColors.length ? `0 0 20px 0px ${popularColors[0]}, 0 0 40px 10px ${popularColors[1]}, 0 0 80px 20px ${popularColors[2]}` : "none"
               }}
             />
           </div>

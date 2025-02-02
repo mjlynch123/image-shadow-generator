@@ -1,11 +1,6 @@
 * {
   box-sizing: border-box;
-  background-color: #282c34;
+  background-color: #1a1a1a
 }
 
-.App {
-  text-align: center;
-  width: 500px;
-  margin: 0 auto;
-  border: 1px solid black;
-}
+.App {}
