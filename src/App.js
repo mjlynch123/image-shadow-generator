@@ -9,15 +9,22 @@ function App() {
   const [showUpload, setShowUpload] = useState(true); // Showing the upload form
   const canvasRef = useRef(null);
 
-  // Handling the upload of the image
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (e) => setImage(e.target.result);
+      reader.onload = (e) => {
+        setImage(e.target.result);
+      };
       reader.readAsDataURL(file);
     }
-  }
+  };
+
+  useEffect(() => {
+    if (image) {
+      analyzeImage();
+    }
+  }, [image]);
 
   const getAverageColor = (ctx, x, y, width, height) => {
     const imageData = ctx.getImageData(x, y, width, height);
@@ -32,7 +39,7 @@ function App() {
       count++;
     }
 
-    return `rgb(${Math.round(r / count)}, ${Math.round(g / count)}, ${Math.round(b / count)})`;
+    return `rgba(${Math.round(r / count)}, ${Math.round(g / count)}, ${Math.round(b / count)}, 0.3)`;
   }
 
   const analyzeImage = () => {
@@ -79,17 +86,40 @@ function App() {
 
   return (
     <div className="App">
-      <input type='file' accept='image/*' onChange={handleImageUpload} />
-      <button onClick={analyzeImage} disabled={!image}>Analyze Image</button>
-      <canvas ref={canvasRef} style={{ display: 'none' }} />
-      <div>
-        <h3>Most Pop Colors</h3>
+      <div className='upload-form'>
+        <input type='file' accept='image/*' onChange={handleImageUpload} />
+        {/* <button onClick={analyzeImage} disabled={!image}>Analyze Image</button> */}
+        <canvas ref={canvasRef} style={{ display: 'none' }} />
+      </div>
+
+      <div className='image-container'>
+        {image && (
+          <div style={{
+            marginTop: "20px",
+            display: "flex",
+            justifyContent: "center"
+          }}>
+            {/* Todo : add a box shadow that is black to the image and then add a div that is the same size as the image that will hold the box shadow for the colors */}
+            <img
+              src={image}
+              alt="Uploaded"
+              style={{
+                maxWidth: "100%",
+                boxShadow: popularColors.length ? `0 0 20px 0px ${popularColors[0]}, 0 0 40px 10px ${popularColors[1]}, 0 0 80px 20px ${popularColors[2]}` : "none"
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      <div className='bottom'>
+        {/* <h3>Most Pop Colors</h3> */}
         <div style={{ display: "flex" }}>
-          {popularColors.map((color, index) => (
-            <div key={index} style={{ background: color, width: 50, height: 50, margin: 5 }}>
+          {/* {popularColors.map((color, index) => (
+            <div key={index} style={{ background: color, width: 50, height: 50, margin: 5, opacity: 0.7 }}>
               {color}
             </div>
-          ))}
+          ))} */}
         </div>
       </div>
     </div>
