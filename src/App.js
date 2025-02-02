@@ -25,7 +25,7 @@ function App() {
 
     let r = 0, g = 0, b = 0, count = 0;
 
-    for (let i = 0; i < data.leng; i += 4) {
+    for (let i = 0; i < data.length; i += 4) {
       r += data[i];
       g += data[i + 1];
       b += data[i + 2];
@@ -79,7 +79,19 @@ function App() {
 
   return (
     <div className="App">
-
+      <input type='file' accept='image/*' onChange={handleImageUpload} />
+      <button onClick={analyzeImage} disabled={!image}>Analyze Image</button>
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
+      <div>
+        <h3>Most Pop Colors</h3>
+        <div style={{ display: "flex" }}>
+          {popularColors.map((color, index) => (
+            <div key={index} style={{ background: color, width: 50, height: 50, margin: 5 }}>
+              {color}
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
