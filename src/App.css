@@ -3,6 +3,13 @@
   background-color: #1a1a1a
 }
 
+.upload-form {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
 .image-container img {
-  box-shadow: 0px 0px 100px 5px rgba(0, 0, 0, .8);
+  box-shadow: 0px 0px 70px 5px rgba(0, 0, 0, .8);
 }
