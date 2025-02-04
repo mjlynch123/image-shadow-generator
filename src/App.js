@@ -113,6 +113,33 @@ function App() {
     };
   };
 
+  // useEffect(() => {
+  //   const handleDragEnter = (e) => {
+  //     e.preventDefault();
+  //     document.body.classList.add('dragging');
+  //   };
+
+  //   const handleDragLeave = (e) => {
+  //     e.preventDefault();
+  //     document.body.classList.remove('dragging');
+  //   };
+
+  //   const handleDrop = (e) => {
+  //     e.preventDefault();
+  //     document.body.classList.remove('dragging');
+  //   };
+
+  //   window.addEventListener('dragenter', handleDragEnter);
+  //   window.addEventListener('dragleave', handleDragLeave);
+  //   window.addEventListener('drop', handleDrop);
+
+  //   return () => {
+  //     window.removeEventListener('dragenter', handleDragEnter);
+  //     window.removeEventListener('dragleave', handleDragLeave);
+  //     window.removeEventListener('drop', handleDrop);
+  //   };
+  // }, []);
+
   return (
     <div style={{
       background: popularColors.length ?
