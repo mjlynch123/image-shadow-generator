@@ -1,14 +1,16 @@
 .App {
-  background-color: black;
+  background-color: grey;
   height: 100vh;
+  position: relative;
 }
 
 .phone-container {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
+  position: absolute;
+  border: 1px solid white;
+  width: 525px;
+  height: 1000px;
   margin: 0 auto;
-  border: 1px solid black;
+  background-color: black;
   border-radius: 20px;
   overflow: hidden;
 }

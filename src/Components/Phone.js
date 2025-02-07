@@ -168,11 +168,12 @@ export default function Phone() {
     //     };
     // };
     const analyzeImage = () => {
-        if (!image || !canvasRef.current) return; // Ensure canvasRef is not null
+        if (!image || !canvasRef.current) return;
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
         const img = new Image();
         img.src = image;
+
         img.onload = () => {
             canvas.width = img.width;
             canvas.height = img.height;
@@ -184,13 +185,7 @@ export default function Phone() {
 
             for (let y = 0; y < rows; y++) {
                 for (let x = 0; x < cols; x++) {
-                    const color = getAverageColor(
-                        ctx,
-                        x * gridSize,
-                        y * gridSize,
-                        gridSize,
-                        gridSize
-                    );
+                    const color = getAverageColor(ctx, x * gridSize, y * gridSize, gridSize, gridSize);
                     colorArray.push(color);
                 }
             }
@@ -201,30 +196,37 @@ export default function Phone() {
             });
 
             let sortedColors = Object.entries(colorCount)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 3)
+                .sort((a, b) => b[1] - a[1]) // Sort by frequency
                 .map(color => color[0]);
 
-            // Get the brightest color
-            const brightestColor = sortedColors.reduce((prev, curr) =>
-                getBrightness(curr) > getBrightness(prev) ? curr : prev
-            );
+            // Filter out any invalid color formats
+            sortedColors = sortedColors.filter(color => color.match(/\d+/g));
 
-            // Create a darker shade of the brightest color
-            const darkestShade = darkenColor(brightestColor, 0.4); // Adjust the factor as needed
+            if (sortedColors.length === 0) {
+                setPopularColors(["rgba(204, 204, 204, 0.6)", "rgba(77, 77, 77, 0.6)", "rgba(13, 13, 13, 0.6)"]);
+                return;
+            }
 
-            // Count the number of grayscale colors
+            // Select the brightest color properly
+            let brightestColor = sortedColors[0];
+            let maxBrightness = 0;
+
+            sortedColors.forEach(color => {
+                const brightness = getBrightness(color);
+                if (brightness > maxBrightness) {
+                    maxBrightness = brightness;
+                    brightestColor = color;
+                }
+            });
+
+            // Generate a darker shade
+            const darkestShade = darkenColor(brightestColor, 0.4);
+
+            // Check for neutral colors
             const neutralCount = sortedColors.filter(isNeutralColor).length;
-
-            // If most colors are neutral, apply a fallback gradient
             if (neutralCount >= 2) {
-                setPopularColors([
-                    "rgba(204, 204, 204, 0.6)",  // Light Grey (Middle Color)
-                    "rgba(77, 77, 77, 0.6)",  // Dark Grey (Outer Middle Color)
-                    "rgba(13, 13, 13, 0.6)"   // Deep blue (End Color)
-                ]);
+                setPopularColors(["rgba(204, 204, 204, 0.6)", "rgba(77, 77, 77, 0.6)", "rgba(13, 13, 13, 0.6)"]);
             } else {
-                // Apply the brightest color with its darker shade as a gradient
                 setPopularColors([brightestColor, darkestShade, darkestShade]);
             }
         };
@@ -239,9 +241,12 @@ export default function Phone() {
 
     return (
         <div style={{
-            background: popularColors.length ?
-                `radial-gradient(circle, ${popularColors[0]} 0%, ${popularColors[1]} 50%, ${popularColors[2]} 100%)`
-                : "radial-gradient(circle, rgba(204, 204, 204, 0.6) 0%, rgba(77, 77, 77, 0.6) 50%, rgba(13, 13, 13, 0.6) 100%)",
+            // background: popularColors.length ?
+            //     `radial-gradient(circle, ${popularColors[0]} 0%, ${popularColors[1]} 50%, ${popularColors[2]} 100%)`
+            //     : "radial-gradient(circle, rgba(204, 204, 204, 0.6) 0%, rgba(77, 77, 77, 0.6) 50%, rgba(13, 13, 13, 0.6) 100%)",
+            background: popularColors.length
+                ? `linear-gradient(315deg, ${popularColors[0]} 0%, ${popularColors[1]} 50%, ${popularColors[2]} 100%)`
+                : "linear-gradient(315deg, rgba(204, 204, 204, 0.6) 0%, rgba(77, 77, 77, 0.6) 50%, rgba(13, 13, 13, 0.6) 100%)",
             // minHeight: "100vh",
             display: "flex",
             flexDirection: "column",
