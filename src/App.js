@@ -60,12 +60,18 @@ function App() {
 
   // Going grid space to grid space calculating the average color
   const analyzeImage = () => {
-    if (!image) return;
+    if (!image || !canvasRef.current) return;
+
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     const img = new Image();
+    img.crossOrigin = "Anonymous"; // Fix CORS issues if necessary
     img.src = image;
+
     img.onload = () => {
+      console.log("Image loaded, analyzing...");
+
+      // Set canvas to image size
       canvas.width = img.width;
       canvas.height = img.height;
       ctx.drawImage(img, 0, 0);
@@ -74,42 +80,31 @@ function App() {
       const rows = Math.floor(img.height / gridSize);
       let colorArray = [];
 
+      // Extract average colors from each grid section
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
-          const color = getAverageColor(
-            ctx,
-            x * gridSize,
-            y * gridSize,
-            gridSize,
-            gridSize
-          );
+          const color = getAverageColor(ctx, x * gridSize, y * gridSize, gridSize, gridSize);
           colorArray.push(color);
         }
       }
 
+      // Count occurrences of each color
       const colorCount = {};
       colorArray.forEach(color => {
         colorCount[color] = (colorCount[color] || 0) + 1;
       });
 
-      let sortedColors = Object.entries(colorCount)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 3)
-        .map(color => color[0]);
+      // Sort colors by frequency (most to least used)
+      let sortedColors = Object.keys(colorCount).sort((a, b) => colorCount[b] - colorCount[a]);
 
-      // Count the number of grayscale colors
-      const neutralCount = sortedColors.filter(isNeutralColor).length;
-
-      // If most colors are neutral, apply a fallback gradient
-      if (neutralCount >= 2) {
-        setPopularColors([
-          "rgba(204, 204, 204, 0.6)",  // Light Grey (Middle Color)
-          "rgba(77, 77, 77, 0.6)",  // Dark Grey (Outer Middle Color)
-          "rgba(13, 13, 13, 0.6)"   // Deep blue (End Color)
-        ]);
-      } else {
-        setPopularColors(sortedColors);
+      // Ensure at least 3 colors are used for the gradient
+      if (sortedColors.length < 3) {
+        console.warn("Not enough unique colors, using fallback gradient.");
+        sortedColors = ["rgb(204, 204, 204)", "rgb(77, 77, 77)", "rgb(13, 13, 13)"];
       }
+
+      console.log("Extracted Colors:", sortedColors);
+      setPopularColors([...sortedColors]); // Store **all** extracted colors
     };
   };
 
@@ -141,18 +136,20 @@ function App() {
   }, []);
 
   return (
-    <div style={{
-      background: popularColors.length ?
-        `radial-gradient(circle, ${popularColors[0]} 0%, ${popularColors[1]} 50%, ${popularColors[2]} 100%)`
-        : "radial-gradient(circle, rgba(204, 204, 204, 0.6) 0%, rgba(77, 77, 77, 0.6) 50%, rgba(13, 13, 13, 0.6) 100%)",
-      minHeight: "100vh",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      justifyContent: "center",
-      padding: "20px"
-    }}
-      className='App'>
+    <div
+      style={{
+        background: popularColors.length
+          ? `linear-gradient(315deg, ${popularColors.map((color, i) => `${color} ${(i / (popularColors.length - 1)) * 100}%`).join(", ")})`
+          : "linear-gradient(315deg, rgba(204, 204, 204, 0.6) 0%, rgba(77, 77, 77, 0.6) 50%, rgba(13, 13, 13, 0.6) 100%)",
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "20px"
+      }}
+      className='App'
+    >
 
       <div className='upload-form'>
         <input type='file' accept='image/*' onChange={handleImageUpload} />
