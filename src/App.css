@@ -1,12 +1,30 @@
 body {
   box-sizing: border-box;
   background-color: #0d0d0d;
+  text-align: center;
+  letter-spacing: 1px;
 }
 
 body.dragging {
   background-color: rgba(0, 0, 0, 0.1);
   /* Light overlay */
   transition: background-color 0.3s ease-in-out;
+}
+
+.instructions {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.4);
+  padding: 10px;
+}
+
+.instructions h1 {
+  font-size: 54px;
+  margin-bottom: 20px;
 }
 
 

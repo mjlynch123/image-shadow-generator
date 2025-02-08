@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
+import defaultImage from './Assets/Images/Main.png';
 import './App.css';
 
 function App() {
-  const [image, setImage] = useState(null);
+  const [image, setImage] = useState(defaultImage);
   const [gridSize] = useState(10);
   const [popularColors, setPopularColors] = useState([]);
 
@@ -79,6 +80,43 @@ function App() {
     return `rgb(${Math.round(r / count)}, ${Math.round(g / count)}, ${Math.round(b / count)})`;
   };
 
+  const rgbToHue = (r, g, b) => {
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let hue = 0;
+
+    if (max !== min) {
+      if (max === r) hue = (g - b) / (max - min);
+      else if (max === g) hue = 2 + (b - r) / (max - min);
+      else hue = 4 + (r - g) / (max - min);
+      hue = Math.round(hue * 60);
+      if (hue < 0) hue += 360;
+    }
+
+    return hue;
+  };
+
+  const filterUniqueColors = (colors) => {
+    const uniqueColors = [];
+    const seenHues = new Set();
+
+    colors.forEach((color) => {
+      const match = color.match(/\d+/g);
+      if (!match) return;
+
+      const [r, g, b] = match.map(Number);
+      const hue = rgbToHue(r, g, b);
+
+      // Check if the hue is sufficiently different from already seen hues
+      if (![...seenHues].some((h) => Math.abs(h - hue) < 30)) {
+        uniqueColors.push(color);
+        seenHues.add(hue);
+      }
+    });
+
+    return uniqueColors;
+  };
+
   const analyzeImage = () => {
     if (!image || !canvasRef.current) {
       return;
@@ -107,25 +145,28 @@ function App() {
       }
 
       const colorCount = {};
-      colorArray.forEach(color => {
+      colorArray.forEach((color) => {
         colorCount[color] = (colorCount[color] || 0) + 1;
       });
 
       let sortedColors = Object.entries(colorCount)
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 10)
-        .map(color => color[0]);
+        .map((color) => color[0]);
 
-      if (sortedColors.length < 3) {
-        sortedColors = sortedColors.concat(["rgb(204, 204, 204)", "rgb(77, 77, 77)", "rgb(13, 13, 13)"]).slice(0, 3);
+      // Filter for unique hues
+      let uniqueColors = filterUniqueColors(sortedColors);
+
+      if (uniqueColors.length < 3) {
+        uniqueColors = uniqueColors.concat(["rgb(204, 204, 204)", "rgb(77, 77, 77)", "rgb(13, 13, 13)"]).slice(0, 3);
       }
 
-      setPopularColors([...sortedColors]);
+      setPopularColors([...uniqueColors]);
     };
   };
 
   const generateSplotchyGradient = () => {
-    if (popularColors.length === 0) return "linear-gradient(315deg, rgba(204, 204, 204, 0.6), rgba(77, 77, 77, 0.6), rgba(13, 13, 13, 0.6))";
+    if (popularColors.length === 0)
+      return "linear-gradient(315deg, rgba(204, 204, 204, 0.6), rgba(77, 77, 77, 0.6), rgba(13, 13, 13, 0.6))";
 
     const splotches = popularColors.map((color, i) => {
       const x = Math.random() * 100; // Random X position
@@ -148,15 +189,21 @@ function App() {
         justifyContent: "center",
         position: "relative",
       }}
-      className='App'
+      className="App"
       onClick={handleClick}
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleDrop}
     >
-      <input type='file' accept='image/*' ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
-      <canvas ref={canvasRef} style={{ display: 'none' }} />
+      <input type="file" accept="image/*" ref={fileInputRef} style={{ display: "none" }} onChange={handleFileChange} />
+      <canvas ref={canvasRef} style={{ display: "none" }} />
 
-      <div className='image-container' style={{ marginTop: "20px" }}>
+      <div className='instructions'>
+        <h1>Reactive Gradient</h1>
+        <p>Gradient will change upon adding an image</p>
+        <h3>Click or Drop an Image on screen</h3>
+      </div>
+
+      <div className="image-container" style={{ marginTop: "20px" }}>
         {image && (
           <img
             src={image}
@@ -165,7 +212,7 @@ function App() {
               maxWidth: "90vw",
               maxHeight: "60vh",
               borderRadius: "15px",
-              boxShadow: "0px 0px 50px rgba(0,0,0,0.3)"
+              boxShadow: "0px 0px 50px rgba(0,0,0,0.3)",
             }}
           />
         )}
