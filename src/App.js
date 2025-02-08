@@ -1,18 +1,15 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
 function App() {
   const [image, setImage] = useState(null);
-  const [gridSize, setGridSize] = useState(10); // Default grid size
+  const [gridSize] = useState(10);
   const [popularColors, setPopularColors] = useState([]);
 
-  const [showUpload, setShowUpload] = useState(true); // Showing the upload form
   const canvasRef = useRef(null);
+  const fileInputRef = useRef(null);
 
-  // Handling the image upload
-  const handleImageUpload = (event) => {
-    const file = event.target.files[0];
+  const handleImageUpload = (file) => {
     if (file) {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -22,14 +19,50 @@ function App() {
     }
   };
 
-  // Analyzing the image to get the most popular colors on everytime the image is uploaded
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    handleImageUpload(file);
+  };
+
+  const handleClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    document.body.classList.remove("dragging");
+
+    const file = event.dataTransfer.files[0];
+    handleImageUpload(file);
+  };
+
+  useEffect(() => {
+    const handleDragOver = (event) => {
+      event.preventDefault();
+      document.body.classList.add("dragging");
+    };
+
+    const handleDragLeave = () => {
+      document.body.classList.remove("dragging");
+    };
+
+    window.addEventListener("dragover", handleDragOver);
+    window.addEventListener("dragleave", handleDragLeave);
+    window.addEventListener("drop", handleDrop);
+
+    return () => {
+      window.removeEventListener("dragover", handleDragOver);
+      window.removeEventListener("dragleave", handleDragLeave);
+      window.removeEventListener("drop", handleDrop);
+    };
+  }, []);
+
   useEffect(() => {
     if (image) {
       analyzeImage();
     }
   }, [image]);
 
-  // Getting the average color of a section of the image
   const getAverageColor = (ctx, x, y, width, height) => {
     const imageData = ctx.getImageData(x, y, width, height);
     const data = imageData.data;
@@ -43,35 +76,21 @@ function App() {
       count++;
     }
 
-    return `rgba(${Math.round(r / count)}, ${Math.round(g / count)}, ${Math.round(b / count)}, 0.3)`;
-  }
-
-  // Checking if the color is neutral, so that it can trigger the default gradient
-  const isNeutralColor = (color) => {
-    const rgba = color.match(/\d+/g); // Extract RGB values
-    if (!rgba) return false;
-
-    const [r, g, b] = rgba.map(Number);
-    const avg = (r + g + b) / 3;
-
-    // A color is neutral if R, G, and B are close together (grayscale) and in a certain brightness range
-    return (Math.abs(r - g) < 15 && Math.abs(g - b) < 15) && (avg < 60 || avg > 190);
+    return `rgb(${Math.round(r / count)}, ${Math.round(g / count)}, ${Math.round(b / count)})`;
   };
 
-  // Going grid space to grid space calculating the average color
   const analyzeImage = () => {
-    if (!image || !canvasRef.current) return;
+    if (!image || !canvasRef.current) {
+      return;
+    }
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     const img = new Image();
-    img.crossOrigin = "Anonymous"; // Fix CORS issues if necessary
+    img.crossOrigin = "Anonymous";
     img.src = image;
 
     img.onload = () => {
-      console.log("Image loaded, analyzing...");
-
-      // Set canvas to image size
       canvas.width = img.width;
       canvas.height = img.height;
       ctx.drawImage(img, 0, 0);
@@ -80,7 +99,6 @@ function App() {
       const rows = Math.floor(img.height / gridSize);
       let colorArray = [];
 
-      // Extract average colors from each grid section
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
           const color = getAverageColor(ctx, x * gridSize, y * gridSize, gridSize, gridSize);
@@ -88,92 +106,68 @@ function App() {
         }
       }
 
-      // Count occurrences of each color
       const colorCount = {};
       colorArray.forEach(color => {
         colorCount[color] = (colorCount[color] || 0) + 1;
       });
 
-      // Sort colors by frequency (most to least used)
-      let sortedColors = Object.keys(colorCount).sort((a, b) => colorCount[b] - colorCount[a]);
+      let sortedColors = Object.entries(colorCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10)
+        .map(color => color[0]);
 
-      // Ensure at least 3 colors are used for the gradient
       if (sortedColors.length < 3) {
-        console.warn("Not enough unique colors, using fallback gradient.");
-        sortedColors = ["rgb(204, 204, 204)", "rgb(77, 77, 77)", "rgb(13, 13, 13)"];
+        sortedColors = sortedColors.concat(["rgb(204, 204, 204)", "rgb(77, 77, 77)", "rgb(13, 13, 13)"]).slice(0, 3);
       }
 
-      console.log("Extracted Colors:", sortedColors);
-      setPopularColors([...sortedColors]); // Store **all** extracted colors
+      setPopularColors([...sortedColors]);
     };
   };
 
-  useEffect(() => {
-    const handleDragEnter = (e) => {
-      e.preventDefault();
-      document.body.classList.add('dragging');
-    };
+  const generateSplotchyGradient = () => {
+    if (popularColors.length === 0) return "linear-gradient(315deg, rgba(204, 204, 204, 0.6), rgba(77, 77, 77, 0.6), rgba(13, 13, 13, 0.6))";
 
-    const handleDragLeave = (e) => {
-      e.preventDefault();
-      document.body.classList.remove('dragging');
-    };
+    const splotches = popularColors.map((color, i) => {
+      const x = Math.random() * 100; // Random X position
+      const y = Math.random() * 100; // Random Y position
+      const size = Math.random() * 50 + 20; // Random size between 20% and 70%
+      return `radial-gradient(circle at ${x}% ${y}%, ${color} 0%, transparent ${size}%)`;
+    });
 
-    const handleDrop = (e) => {
-      e.preventDefault();
-      document.body.classList.remove('dragging');
-    };
-
-    window.addEventListener('dragenter', handleDragEnter);
-    window.addEventListener('dragleave', handleDragLeave);
-    window.addEventListener('drop', handleDrop);
-
-    return () => {
-      window.removeEventListener('dragenter', handleDragEnter);
-      window.removeEventListener('dragleave', handleDragLeave);
-      window.removeEventListener('drop', handleDrop);
-    };
-  }, []);
+    return splotches.join(", ");
+  };
 
   return (
     <div
       style={{
-        background: popularColors.length
-          ? `linear-gradient(315deg, ${popularColors.map((color, i) => `${color} ${(i / (popularColors.length - 1)) * 100}%`).join(", ")})`
-          : "linear-gradient(315deg, rgba(204, 204, 204, 0.6) 0%, rgba(77, 77, 77, 0.6) 50%, rgba(13, 13, 13, 0.6) 100%)",
+        background: generateSplotchyGradient(),
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "20px"
+        position: "relative",
       }}
       className='App'
+      onClick={handleClick}
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={handleDrop}
     >
+      <input type='file' accept='image/*' ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
 
-      <div className='upload-form'>
-        <input type='file' accept='image/*' onChange={handleImageUpload} />
-
-        <canvas ref={canvasRef} style={{ display: 'none' }} />
-      </div>
-
-
-
-      <div className='image-container'>
+      <div className='image-container' style={{ marginTop: "20px" }}>
         {image && (
-          <div style={{
-            marginTop: "20px",
-            display: "flex",
-            justifyContent: "center"
-          }}>
-            <img
-              src={image}
-              alt="Uploaded"
-              style={{
-                maxWidth: "100%",
-              }}
-            />
-          </div>
+          <img
+            src={image}
+            alt="Uploaded"
+            style={{
+              maxWidth: "90vw",
+              maxHeight: "60vh",
+              borderRadius: "15px",
+              boxShadow: "0px 0px 50px rgba(0,0,0,0.3)"
+            }}
+          />
         )}
       </div>
     </div>
